@@ -430,4 +430,245 @@ psql -d versys -U marcus
 ```
 
 ## RESTfull сервіс для управління даними
+### index.js
+```
+const express = require(`express`)
+const userRouter = require('./routes/user.routes')
+const messagesRouter = require('./routes/messages.routes')
+const AppError = require("./utils/appError")
+const errorHandler = require("./utils/errorHandler");
 
+const PORT = 8080
+
+const app = express()
+app.use(express.json())
+app.use('/api', userRouter)
+app.use('/api', messagesRouter)
+
+app.all("*", (req, res, next) => {
+    next(new AppError(`The URL ${req.originalUrl} does not exists`, 404));
+  });
+app.use(errorHandler);
+
+app.listen(PORT, () => console.log(`server started on port ${PORT}`))
+```
+### db.js
+```
+const Pool = require('pg').Pool
+const pool = new Pool( {
+    user: "postgres",
+    password: '4576',
+    host: "localhost",
+    port: 5432,
+    database:"node_postgres"
+})
+
+module.exports = pool
+```
+### user.controller.js
+```
+const db = require('../db');
+const AppError = require("../utils/appError");
+
+class UserController {
+    async createUser(req, res, next) {
+        try {
+            const { login, password, phone, email, avatar, system_role, created_at, updated_at } = req.body;
+
+            const newPerson = await db.query(
+                `INSERT INTO "users" ("login", "password", "phone", "email", "avatar", "system_role", "created_at", "updated_at") 
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+                [login, password, phone, email, avatar, system_role, created_at, updated_at]
+            );
+
+            res.json(newPerson.rows[0]);
+        } catch (err) {
+            next(new AppError('Unable to create user', 400));
+        }
+    }
+    async getUsers(req, res) {
+        const users = await db.query('SELECT * FROM users')
+        res.json(users.rows)
+    }
+    async getOneUser(req, res, next) {
+        try {
+            const id = req.params.id;
+            const user = await db.query('SELECT * FROM users where id = $1', [id]);
+
+            if (!user.rows[0]) {
+                return next(new AppError('User not found', 404));
+            }
+
+            res.json(user.rows[0]);
+        } catch (err) {
+            next(new AppError('Unable to fetch user', 400));
+        }
+    }
+    async updateUser(req, res, next) {
+        try {
+            const { id, login, password, phone, email, avatar, system_role, created_at, updated_at } = req.body;
+            const user = await db.query(
+                'UPDATE "users" set "login" = $1, "password" = $2, "phone" = $3, "email" = $4, "avatar" = $5, "system_role" = $6, "created_at" = $7, "updated_at" = $8 where id =$9 RETURNING *',
+                [login, password, phone, email, avatar, system_role, created_at, updated_at, id]
+            );
+
+            if (!user.rows[0]) {
+                return next(new AppError('User not found', 404));
+            }
+
+            res.json(user.rows[0]);
+        } catch (err) {
+            next(new AppError('Unable to update user', 400));
+        }
+    }
+    async deleteUser(req, res, next) {
+        try {
+            const id = req.params.id;
+            const user = await db.query('DELETE FROM users where id = $1 RETURNING *', [id]);
+
+            if (!user.rows[0]) {
+                return next(new AppError('User not found', 404));
+            }
+
+            res.json(user.rows[0]);
+        } catch (err) {
+            next(new AppError('Unable to delete user', 400));
+        }
+    }
+}
+
+module.exports = new UserController()
+```
+### messages.controller.js
+```
+const db = require('../db');
+const AppError = require("../utils/appError");
+
+class MessagesController {
+    async createMessage(req, res, next) {
+        try {
+            const { content, created_at, sheduled_at } = req.body;
+            const newMessages = await db.query(
+                `INSERT INTO "messages" ("content", "created_at", "sheduled_at") VALUES ($1, $2, $3) RETURNING *`,
+                [content, created_at, sheduled_at]
+            );
+            res.json(newMessages.rows[0]);
+        } catch (err) {
+            next(new AppError('Unable to create message', 400));
+        }
+    }
+
+    async getMessages(req, res, next) {
+        try {
+            const messages = await db.query('SELECT * FROM messages');
+            res.json(messages.rows);
+        } catch (err) {
+            next(new AppError('Unable to fetch messages', 400));
+        }
+    }
+
+    async getOneMessage(req, res, next) {
+        try {
+            const id = req.params.id;
+            const message = await db.query('SELECT * FROM messages where id = $1', [id]);
+
+            if (!message.rows[0]) {
+                return next(new AppError('Message not found', 404));
+            }
+
+            res.json(message.rows[0]);
+        } catch (err) {
+            next(new AppError('Unable to fetch message', 400));
+        }
+    }
+
+    async updateMessage(req, res, next) {
+        try {
+            const { id, content, created_at, sheduled_at } = req.body;
+            const message = await db.query(
+                'UPDATE "messages" set "content" = $1, "created_at" = $2, "sheduled_at" = $3 where id =$4 RETURNING *',
+                [content, created_at, sheduled_at, id]
+            );
+
+            if (!message.rows[0]) {
+                return next(new AppError('Message not found', 404));
+            }
+
+            res.json(message.rows[0]);
+        } catch (err) {
+            next(new AppError('Unable to update message', 400));
+        }
+    }
+
+    async deleteMessage(req, res, next) {
+        try {
+            const id = req.params.id;
+            const message = await db.query('DELETE FROM messages where id = $1 RETURNING *', [id]);
+
+            if (!message.rows[0]) {
+                return next(new AppError('Message not found', 404));
+            }
+
+            res.json(message.rows[0]);
+        } catch (err) {
+            next(new AppError('Unable to delete message', 400));
+        }
+    }
+}
+
+module.exports = new MessagesController();
+```
+### user.routes.js
+```
+const Router = require('express')
+const router = new Router()
+const userController = require('../controller/user.controller')
+
+router.post('/user', userController.createUser)
+router.get('/user', userController.getUsers)
+router.get('/user/:id', userController.getOneUser)
+router.put('/user', userController.updateUser)
+router.delete('/user/:id', userController.deleteUser)
+
+module.exports = router
+```
+### messages.routes.js
+```
+const Router = require('express')
+const router = new Router()
+const messagesController = require('../controller/messages.controller')
+
+router.post('/messages', messagesController.createMessage)
+router.get('/messages', messagesController.getMessages)
+router.get('/messages/:id', messagesController.getOneMessage)
+router.put('/messages', messagesController.updateMessage)
+router.delete('/messages/:id', messagesController.deleteMessage)
+
+module.exports = router
+```
+### appError.js
+```
+class AppError extends Error {
+    constructor(msg, statusCode) {
+      super(msg);
+  
+      this.statusCode = statusCode;
+      this.error = `${statusCode}`.startsWith("4") ? "fail" : "error";
+      this.isOperational = true;
+  
+      Error.captureStackTrace(this, this.constructor);
+    }
+  }
+  module.exports = AppError;
+```
+### errorHandler.js
+```
+module.exports = (err, req, res, next) => {
+    err.statusCode = err.statusCode || 500;
+    err.status = err.status || "error";
+    res.status(err.statusCode).json({
+      status: err.status,
+      message: err.message,
+    });
+  };
+```
