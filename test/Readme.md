@@ -10,7 +10,7 @@
 ### Messages:
 ![messagesInitial](./messages_initial.JPG)
 
-## Тестування запитів
+## Тест в Postman
 
 ### Users:
 
