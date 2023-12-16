@@ -47,13 +47,13 @@
 ## Bad request 400
 ### Users:
 ![badRequestUsers400](./users_400.JPG)
-### Проєкт:
+### Messages:
 ![badRequestMessages400](./messages_400.JPG)
 
 ## Not found 404
 ### Users:
 ![notFoundUsersGet404](./users_get_404.JPG)
 ![notFoundUsersDelete404](./users_delete_404.JPG)
-### Проєкт:
+### Messages:
 ![notFoundMessagesGet404](./messages_get_404.JPG)
 ![notFoundMessagesDelete404](./messages_delete_404.JPG)
