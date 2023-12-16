@@ -50,7 +50,7 @@
 ### Messages:
 ![badRequestMessages400](./messages_400.JPG)
 
-## Not found 404
+## Not  found 404
 ### Users:
 ![notFoundUsersGet404](./users_get_404.JPG)
 ![notFoundUsersDelete404](./users_delete_404.JPG)
