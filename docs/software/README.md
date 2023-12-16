@@ -430,7 +430,7 @@ psql -d versys -U marcus
 ```
 
 ## RESTfull сервіс для управління даними
-### index.js
+### Налаштування Express сервера index.js 
 ```
 const express = require(`express`)
 const userRouter = require('./routes/user.routes')
@@ -452,7 +452,7 @@ app.use(errorHandler);
 
 app.listen(PORT, () => console.log(`server started on port ${PORT}`))
 ```
-### db.js
+### Підключення до бази даних db.js
 ```
 const Pool = require('pg').Pool
 const pool = new Pool( {
@@ -465,7 +465,7 @@ const pool = new Pool( {
 
 module.exports = pool
 ```
-### user.controller.js
+### Створення контролерів user.controller.js
 ```
 const db = require('../db');
 const AppError = require("../utils/appError");
@@ -539,7 +539,7 @@ class UserController {
 
 module.exports = new UserController()
 ```
-### messages.controller.js
+### Створення контролерів messages.controller.js
 ```
 const db = require('../db');
 const AppError = require("../utils/appError");
@@ -618,7 +618,7 @@ class MessagesController {
 
 module.exports = new MessagesController();
 ```
-### user.routes.js
+### Створення routes user.routes.js
 ```
 const Router = require('express')
 const router = new Router()
@@ -632,7 +632,7 @@ router.delete('/user/:id', userController.deleteUser)
 
 module.exports = router
 ```
-### messages.routes.js
+### Створення routes messages.routes.js
 ```
 const Router = require('express')
 const router = new Router()
@@ -646,7 +646,7 @@ router.delete('/messages/:id', messagesController.deleteMessage)
 
 module.exports = router
 ```
-### appError.js
+### Створення глобальних обробників помилок appError.js
 ```
 class AppError extends Error {
     constructor(msg, statusCode) {
