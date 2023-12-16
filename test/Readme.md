@@ -42,7 +42,7 @@
 ![deleteMessage](./messages_delete.JPG)
 ![deleteMessageDB](./messages_db_after_delete.JPG)
 
-## Обробка помилок
+## Помилки 400 та 404
 
 ## Bad request 400
 ### Users:
