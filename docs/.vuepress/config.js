@@ -14,7 +14,7 @@ module.exports = {
       after: '</code></pre>'
     }]
   ],
-  port: 3030,
+  port: 3030, 
   base: '/database-coursework/',
   theme: 'cool',
   // dest: 'dist',
